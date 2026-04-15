@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Streaming viewer</title>
+    <link rel="icon" type="image/png" href="webots_icon.png">
+    <style>
+      html, body {
+        padding:0;
+        margin:0;
+        height: 100%;
+      }
+      iframe {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        height: 100%;
+        width: 500px;
+        background: white;
+        padding: 0px;
+        margin: 0px;
+        border: 0px;
+      }
+
+      webots-view {
+        position: absolute!important;
+        left: 500px;
+        width: calc(100% - 500px);
+        border: 0px;
+        margin: 0px;
+        min-width: 320px;
+        overflow-x:hidden;
+      }
+
+      .menu-button .arrow-right{
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        display: inline-block;
+        padding: 4px;
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+        position: absolute;
+        top: calc(50% - 5px);
+        left: calc(50% - 10px);
+        pointer-events: none;
+      }
+
+      .menu-button .arrow-left{
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        display: inline-block;
+        padding: 4px;
+        transform: rotate(135deg);
+        -webkit-transform: rotate(135deg);
+        position: absolute;
+        top: calc(50% - 5px);
+        left: calc(50% - 5px);
+        pointer-events: none;
+      }
+
+      .menu-button {
+        position: absolute;
+        top:calc(50% - 15px);
+        left: 500px;
+        width: 26px;
+        height: 52px;
+        border-top-right-radius: 24px;
+        border-bottom-right-radius: 24px;
+        background-color: #333;
+        border-color: transparent;
+        z-index: 2;
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <button class="menu-button" id="menuButton" title="Show/Hide the robot window."><div class="arrow-left" id="arrow"></div></button>
+    <script type="module">
+      import WebotsView from "https://cyberbotics.com/wwi/R2022b/WebotsView.js";
+      let showRobotWindow = true;
+      let webotsView = new WebotsView();
+      webotsView.id = 'webotsView';
+      webotsView.showQuit = false;
+      webotsView.showReset = false;
+      webotsView.showStep = false;
+      webotsView.showRobotWindow = false;
+      document.body.appendChild(webotsView);
+      webotsView.onready = displayRobotWindow;
+      webotsView.connect('https://simulation.webots.cloud/1998/session?url=https://github.com/cyberbotics/artificialbrains/blob/main/worlds/e-puck.wbt', undefined, undefined, undefined, 900);
+      function displayRobotWindow() {
+        if (webotsView._view && webotsView._view.x3dScene && webotsView._view.x3dScene.prefix) {
+           let serverUrl = webotsView._view.x3dScene.prefix;
+           let url = serverUrl + 'robot_windows/simple_e-puck/simple_e-puck.html?name=e-puck';
+           let iframe = document.createElement('iframe');
+           iframe.src = url;
+           iframe.id = 'robotWindow',
+           document.body.appendChild(iframe)
+
+           if (document.getElementById('fullscreen-button'))
+             document.getElementById('fullscreen-button').onclick = () => toggleRobotComponentFullScreen();
+           if (document.getElementById('windowed-button')) {
+             document.getElementById('windowed-button').onclick = () => toggleRobotComponentFullScreen();
+             document.getElementById('windowed-button').style.display = 'none';
+           }
+
+           const menuButton = document.getElementById('menuButton');
+           if (menuButton)
+            menuButton.style.display = 'block';
+
+           autoPlay();
+
+           if (document.getElementsByClassName('menu-button').length !== 0)
+             document.getElementsByClassName('menu-button')[0].onclick = () => toggleDeviceComponent();
+        }else setTimeout(function () {
+          displayRobotWindow()
+        }, 100);
+      }
+
+      function toggleRobotComponentFullScreen(robot) {
+        if (document.fullscreenElement) {
+          document.getElementById('fullscreen-button').style.display = '';
+          document.getElementById('windowed-button').style.display = 'none';
+
+          if (document.exitFullscreen)
+            document.exitFullscreen();
+        } else {
+          document.getElementById('fullscreen-button').style.display = 'none';
+          document.getElementById('windowed-button').style.display = '';
+          if (document.body.requestFullscreen) {
+            document.body.requestFullscreen();
+          }
+        }
+      }webotsView
+
+      function autoPlay(){
+        if (webotsView.toolbar)
+          webotsView.toolbar._triggerPlayPauseButton();
+        else
+          setTimeout(() => autoPlay(), 100);
+      }
+
+      function showButton() {
+        if (document.getElementsByClassName('menu-button').length !== 0)
+          document.getElementsByClassName('menu-button')[0].style.display = '';
+      }
+
+      function hideButton() {
+        if (document.getElementsByClassName('menu-button').length !== 0)
+          document.getElementsByClassName('menu-button')[0].style.display = 'none';
+      }
+
+      function toggleDeviceComponent() {
+        showRobotWindow = !showRobotWindow;
+        updateRobotWindowDimension();
+
+        let arrow = document.getElementById('arrow');
+        if (arrow) {
+          if (arrow.className === 'arrow-right')
+            arrow.className = 'arrow-left';
+          else if (arrow.className === 'arrow-left')
+            arrow.className = 'arrow-right';
+        }
+      }
+
+      function updateRobotWindowDimension() {
+        const robotWindow = document.getElementById('robotWindow');
+        const webotsView = document.getElementById('webotsView');
+        const menuButton = document.getElementById('menuButton');
+
+        if (showRobotWindow === true) {
+          robotWindow.style.display = '';
+          webotsView.style.width = 'calc(100% - 500px)';
+          webotsView.style.left = '500px'
+          menuButton.style.left = '500px';
+        } else {
+          robotWindow.style.display = 'none';
+          webotsView.style.width = '100%';
+          webotsView.style.left = '0px';
+          menuButton.style.left = '0px';
+        }
+
+        webotsView.resize();
+      }
+    </script>
+  </body>
+
+</html>
