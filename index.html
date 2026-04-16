@@ -89,11 +89,11 @@
       webotsView.showRobotWindow = false;
       document.body.appendChild(webotsView);
       webotsView.onready = displayRobotWindow;
-      webotsView.connect('https://simulation.webots.cloud/1999/session?url=https://github.com/cyberbotics/artificialbrains/blob/main/worlds/e-puck.wbt', undefined, undefined, undefined, 900);
+      webotsView.connect('https://simulation.webots.cloud/1999/session?url=https://github.com/cyberbotics/artificialbrains/blob/main/worlds/custom_robot_window.wbt', undefined, undefined, undefined, 900);
       function displayRobotWindow() {
         if (webotsView._view && webotsView._view.x3dScene && webotsView._view.x3dScene.prefix) {
            let serverUrl = webotsView._view.x3dScene.prefix;
-           let url = serverUrl + 'robot_windows/simple_e-puck/simple_e-puck.html?name=e-puck';
+           let url = serverUrl + 'robot_windows/custom_robot_window/custom_robot_window.html?name=e-puck';
            let iframe = document.createElement('iframe');
            iframe.src = url;
            iframe.id = 'robotWindow',
